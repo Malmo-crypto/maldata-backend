@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Maldata System</title>
+  <style>
+    #dashboard { display: none; }
+    .hidden { display: none; }
+    .box { margin: 10px 0; }
+    a { cursor: pointer; color: blue; }
+  </style>
+</head>
+<body>
+
+<!-- ================= AUTH ================= -->
+<div id="auth">
+
+  <!-- REGISTER -->
+  <div id="registerBox">
+    <h2>📝 Register</h2>
+    <input id="regName" placeholder="Name"><br>
+    <input id="regEmail" placeholder="Email"><br>
+    <input id="regPassword" placeholder="Password"><br>
+    <button onclick="register()">Register</button>
+
+    <p>
+      Already registered?
+      <a onclick="showLogin()">Login here</a>
+    </p>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="loginBox" class="hidden">
+    <h2>🔑 Login</h2>
+    <input id="loginEmail" placeholder="Email"><br>
+    <input id="loginPassword" placeholder="Password"><br>
+    <button onclick="login()">Login</button>
+
+    <p>
+      New user?
+      <a onclick="showRegister()">Register here</a>
+    </p>
+  </div>
+
+</div>
+
+<!-- ================= DASHBOARD ================= -->
+<div id="dashboard">
+
+  <h2>👤 Welcome, <span id="userName"></span></h2>
+
+  <div class="box">
+    💳 Balance: <span id="balance">0</span>
+  </div>
+
+  <input id="amount" placeholder="Fund amount">
+  <button onclick="fundWallet()">Fund Wallet</button>
+
+  <hr>
+
+  <h3>📡 Buy Data</h3>
+  <select id="plans"></select><br>
+  <button onclick="buyData()">Buy Data</button>
+
+  <h3>Buy Airtime</h3>
+
+<select id="network">
+  <option value="MTN">MTN</option>
+  <option value="AIRTEL">Airtel</option>
+  <option value="GLO">Glo</option>
+  <option value="9MOBILE">9mobile</option>
+</select>
+
+<br><br>
+
+<input id="phone" placeholder="Enter phone number">
+<br><br>
+
+<input id="amount" placeholder="Enter amount">
+<br><br>
+
+<button onclick="buyAirtime()">Buy Airtime</button>
+
+  <hr>
+
+  <h3>📜 Transactions</h3>
+  <pre id="transactions"></pre>
+
+</div>
+
+<script>
+let token = "";
+
+/* ================= TOGGLE UI ================= */
+function showLogin() {
+  registerBox.classList.add("hidden");
+  loginBox.classList.remove("hidden");
+}
+
+function showRegister() {
+  loginBox.classList.add("hidden");
+  registerBox.classList.remove("hidden");
+}
+
+/* ================= REGISTER ================= */
+async function register() {
+  const res = await fetch("http://localhost:5000/api/auth/register", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      name: regName.value,
+      email: regEmail.value,
+      password: regPassword.value
+    })
+  });
+
+  const data = await res.json();
+  alert(data.message || "Registered");
+}
+
+/* ================= LOGIN ================= */
+async function login() {
+  const res = await fetch("http://localhost:5000/api/auth/login", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      email: loginEmail.value,
+      password: loginPassword.value
+    })
+  });
+
+  const data = await res.json();
+
+  if (data.token) {
+    token = data.token;
+
+    auth.style.display = "none";
+    dashboard.style.display = "block";
+
+    userName.innerText = data.user.name;
+
+    loadWallet();
+    loadPlans();
+  } else {
+    alert(data.error || "Login failed");
+  }
+}
+
+/* ================= WALLET ================= */
+async function loadWallet() {
+  const res = await fetch("http://localhost:5000/api/wallet", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+
+  const data = await res.json();
+
+  balance.innerText = data.balance;
+  transactions.innerText = JSON.stringify(data.transactions, null, 2);
+}
+
+/* ================= FUND ================= */
+async function fundWallet() {
+  await fetch("http://localhost:5000/api/wallet/fund", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ amount: amount.value })
+  });
+
+  loadWallet();
+}
+
+/* ================= PLANS ================= */
+async function loadPlans() {
+  const res = await fetch("http://localhost:5000/api/data/plans");
+  const data = await res.json();
+
+  plans.innerHTML = "";
+
+  data.forEach(p => {
+    let opt = document.createElement("option");
+    opt.value = p._id;
+    opt.text = `${p.name} - ₦${p.price}`;
+    plans.appendChild(opt);
+  });
+}
+
+/* ================= BUY ================= */
+async function buyData() {
+  const res = await fetch("http://localhost:5000/api/data/buy", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ planId: plans.value })
+  });
+
+  const data = await res.json();
+  alert(data.message);
+
+  loadWallet();
+}
+
+async function buyAirtime() {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch("http://localhost:5000/api/airtime/buy", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({
+      phone: document.getElementById("phone").value,
+      amount: Number(document.getElementById("amount").value),
+      network: document.getElementById("network").value
+    })
+  });
+
+  const data = await res.json();
+  console.log(data);
+}
+</script>
+
+</body>
+</html>

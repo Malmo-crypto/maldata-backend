@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Maldata Dashboard</title>
+</head>
+<body>
+
+    <script>console.log(data);</script>
+<h2>🔐 Login</h2>
+<input id="email" placeholder="Email">
+<input id="password" placeholder="Password">
+<button onclick="login()">Login</button>
+
+<hr>
+
+<h2>👤 User</h2>
+<p id="userInfo">Not logged in</p>
+
+<h2>💳 Wallet</h2>
+<p id="balance">Balance: 0</p>
+
+<input id="amount" placeholder="Enter amount">
+<button onclick="fundWallet()">Fund Wallet</button>
+
+<hr>
+
+<h2>📡 Buy Data</h2>
+<select id="plans"></select>
+<button onclick="buyData()">Buy Data</button>
+
+<hr>
+
+<h2>📜 Transactions</h2>
+<pre id="transactions"></pre>
+
+<script>
+let token = "";
+
+async function register() {
+  const res = await fetch("http://localhost:5000/api/auth/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      name: document.getElementById("name").value,   // 🔥 ADD THIS
+      email: document.getElementById("email").value,
+      password: document.getElementById("password").value
+    })
+  });
+
+  const data = await res.json();
+  console.log(data);
+}
+
+/* ================= LOGIN ================= */
+async function login() {
+  const res = await fetch("http://localhost:5000/api/auth/login", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      email: email.value,
+      password: password.value
+    })
+  });
+
+  const data = await res.json();
+
+  console.log("LOGIN RESPONSE:", data); // 🔥 VERY IMPORTANT
+
+  token = data.token;
+
+  userInfo.innerText = data.user?.name || "No Name Found";
+
+
+  loadWallet();
+  loadPlans();
+}
+
+/* ================= LOAD WALLET ================= */
+async function loadWallet() {
+  const res = await fetch("http://localhost:5000/api/wallet", {
+    headers: {
+      "Authorization": "Bearer " + token
+    }
+  });
+
+  const data = await res.json();
+
+  balance.innerText = "Balance: " + data.balance;
+  transactions.innerText = JSON.stringify(data.transactions, null, 2);
+}
+
+/* ================= FUND WALLET ================= */
+async function fundWallet() {
+  await fetch("http://localhost:5000/api/wallet/fund", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({
+      amount: amount.value
+    })
+  });
+
+  loadWallet();
+}
+
+/* ================= LOAD PLANS ================= */
+async function loadPlans() {
+  const res = await fetch("http://localhost:5000/api/data/plans");
+  const data = await res.json();
+
+  plans.innerHTML = "";
+
+  data.forEach(plan => {
+    const option = document.createElement("option");
+    option.value = plan._id;
+    option.text = `${plan.network} - ${plan.name} (${plan.price})`;
+    plans.appendChild(option);
+  });
+}
+
+/* ================= BUY DATA ================= */
+async function buyData() {
+  const planId = plans.value;
+
+  await fetch("http://localhost:5000/api/data/buy", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ planId })
+  });
+
+  loadWallet();
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    button { margin: 5px; padding: 10px; }
+    pre { background: #f4f4f4; padding: 10px; }
+  </style>
+</head>
+<body>
+
+<h1>🛠️ Admin Dashboard</h1>
+
+<!-- LOGIN TOKEN INPUT -->
+<input id="token" placeholder="Paste Admin Token" style="width:400px;">
+<br><br>
+
+<button onclick="getUsers()">👤 View Users</button>
+<button onclick="getWallets()">💳 View Wallets</button>
+<button onclick="getTransactions()">📜 View Transactions</button>
+
+<hr>
+
+<h3>Result:</h3>
+<pre id="output"></pre>
+
+<script>
+
+function getToken() {
+  return document.getElementById("token").value;
+}
+
+/* ================= USERS ================= */
+async function getUsers() {
+  const res = await fetch("http://localhost:5000/api/admin/users", {
+    headers: {
+      "Authorization": "Bearer " + getToken()
+    }
+  });
+
+  const data = await res.json();
+  output.innerText = JSON.stringify(data, null, 2);
+}
+
+/* ================= WALLETS ================= */
+async function getWallets() {
+  const res = await fetch("http://localhost:5000/api/admin/wallets", {
+    headers: {
+      "Authorization": "Bearer " + getToken()
+    }
+  });
+
+  const data = await res.json();
+  output.innerText = JSON.stringify(data, null, 2);
+}
+
+/* ================= TRANSACTIONS ================= */
+async function getTransactions() {
+  const res = await fetch("http://localhost:5000/api/admin/transactions", {
+    headers: {
+      "Authorization": "Bearer " + getToken()
+    }
+  });
+
+  const data = await res.json();
+  output.innerText = JSON.stringify(data, null, 2);
+}
+
+</script>
+
+</body>
+</html>

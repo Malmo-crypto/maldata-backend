@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Analytics Dashboard</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 { margin-bottom: 20px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .value {
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    button {
+      margin: 10px 0;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .section {
+      margin-top: 30px;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    pre {
+      background: #000;
+      color: #0f0;
+      padding: 10px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>📊 Admin Analytics Dashboard</h1>
+
+<!-- TOKEN -->
+<input id="token" placeholder="Paste Admin Token" style="width:400px;">
+<button onclick="loadOverview()">Load Analytics</button>
+
+<hr>
+
+<!-- ================= OVERVIEW CARDS ================= -->
+<div class="grid">
+
+  <div class="card">
+    👤 Users
+    <div class="value" id="users">0</div>
+  </div>
+
+  <div class="card">
+    💰 Wallet Balance
+    <div class="value" id="balance">0</div>
+  </div>
+
+  <div class="card">
+    📜 Transactions
+    <div class="value" id="transactions">0</div>
+  </div>
+
+  <div class="card">
+    💸 Revenue
+    <div class="value" id="revenue">0</div>
+  </div>
+
+</div>
+
+<!-- ================= USER GROWTH ================= -->
+<div class="section">
+  <h3>📈 User Growth</h3>
+  <button onclick="loadGrowth()">Load Growth Data</button>
+  <pre id="growth"></pre>
+</div>
+
+<!-- ================= TRANSACTION STATS ================= -->
+<div class="section">
+  <h3>💸 Transaction Stats</h3>
+  <button onclick="loadStats()">Load Stats</button>
+  <pre id="stats"></pre>
+</div>
+
+<script>
+
+function token() {
+  return document.getElementById("token").value;
+}
+
+/* ================= OVERVIEW ================= */
+async function loadOverview() {
+  const res = await fetch("http://localhost:5000/api/admin/analytics/overview", {
+    headers: {
+      "Authorization": "Bearer " + token()
+    }
+  });
+
+  const data = await res.json();
+
+  users.innerText = data.usersCount;
+  balance.innerText = data.totalBalance;
+  transactions.innerText = data.totalTransactions;
+  revenue.innerText = data.totalRevenue;
+}
+
+/* ================= GROWTH ================= */
+async function loadGrowth() {
+  const res = await fetch("http://localhost:5000/api/admin/analytics/users-growth", {
+    headers: {
+      "Authorization": "Bearer " + token()
+    }
+  });
+
+  const data = await res.json();
+  growth.innerText = JSON.stringify(data, null, 2);
+}
+
+/* ================= STATS ================= */
+async function loadStats() {
+  const res = await fetch("http://localhost:5000/api/admin/analytics/transactions", {
+    headers: {
+      "Authorization": "Bearer " + token()
+    }
+  });
+
+  const data = await res.json();
+  stats.innerText = JSON.stringify(data, null, 2);
+}
+
+</script>
+
+</body>
+</html>

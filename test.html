@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Maldata System</title>
+</head>
+<body>
+
+<h2>LOGIN</h2>
+<input id="email" placeholder="Email">
+<input id="password" placeholder="Password">
+<button onclick="login()">Login</button>
+
+<hr>
+
+<h2>WALLET</h2>
+<button onclick="getWallet()">Get Wallet</button>
+<button onclick="fundWallet()">Fund Wallet</button>
+<input id="amount" placeholder="Amount">
+
+<hr>
+
+<h2>BUY DATA</h2>
+<input id="planId" placeholder="Plan ID">
+<button onclick="buyData()">Buy Data</button>
+
+<pre id="output"></pre>
+
+<script>
+let token = "";
+
+/* ================= LOGIN ================= */
+async function login() {
+  const res = await fetch("http://localhost:5000/api/auth/login", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      email: email.value,
+      password: password.value
+    })
+  });
+
+  const data = await res.json();
+  token = data.token;
+
+  output.innerText = JSON.stringify(data, null, 2);
+}
+
+/* ================= GET WALLET ================= */
+async function getWallet() {
+  const res = await fetch("http://localhost:5000/api/wallet", {
+    headers: {
+      "Authorization": "Bearer " + token
+    }
+  });
+
+  output.innerText = JSON.stringify(await res.json(), null, 2);
+}
+
+/* ================= FUND WALLET ================= */
+async function fundWallet() {
+  const res = await fetch("http://localhost:5000/api/wallet/fund", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({
+      amount: amount.value
+    })
+  });
+
+  output.innerText = JSON.stringify(await res.json(), null, 2);
+}
+
+/* ================= BUY DATA ================= */
+async function buyData() {
+  const res = await fetch("http://localhost:5000/api/data/buy", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({
+      planId: planId.value
+    })
+  });
+
+  output.innerText = JSON.stringify(await res.json(), null, 2);
+}
+</script>
+
+</body>
+</html>

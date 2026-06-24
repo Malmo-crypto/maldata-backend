@@ -1,0 +1,41 @@
+<h2>Register</h2>
+<input id="name" placeholder="Name">
+<input id="email" placeholder="Email">
+<input id="password" placeholder="Password">
+<button onclick="register()">Register</button>
+
+<h2>Login</h2>
+<input id="loginEmail" placeholder="Email">
+<input id="loginPassword" placeholder="Password">
+<button onclick="login()">Login</button>
+
+<pre id="out"></pre>
+
+<script>
+async function register() {
+  const res = await fetch("http://localhost:5000/api/auth/register", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      name: name.value,
+      email: email.value,
+      password: password.value
+    })
+  });
+
+  out.innerText = JSON.stringify(await res.json(), null, 2);
+}
+
+async function login() {
+  const res = await fetch("http://localhost:5000/api/auth/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      email: loginEmail.value,
+      password: loginPassword.value
+    })
+  });
+
+  out.innerText = JSON.stringify(await res.json(), null, 2);
+}
+</script>
