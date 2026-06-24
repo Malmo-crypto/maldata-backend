@@ -88,8 +88,8 @@ app.get("/create-test-user", async (req, res) => {
 // =========================
 // 🚀 BACKGROUND JOBS
 // =========================
-const startSyncJob = require("./jobs/syncPlansJob");
-const startReconciliationJob = require("./jobs/reconciliationJob");
+const startSyncJob = require("./Jobs/SyncPlansJob");
+const startReconciliationJob = require("./jobs/Reconciliationjob");
 
 startSyncJob();
 startReconciliationJob();
